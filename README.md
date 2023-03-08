@@ -6,7 +6,7 @@
 
 Munz Addr is a Firefox extension that uses the [Bing Maps API](https://www.bingmapsportal.com/) to reverse-geocode a Munzee's coordinates and adds the resulting street address below the mini map, where it used to be.
 
-![Street address below the map](https://mortonfox.github.io/munz-addr-ext/addr_below_map.png)
+![Street address below the map](https://raw.githubusercontent.com/mortonfox/munz-addr-ext-firefox/main/docs/addr_below_map_firefox.png)
 
 ## Installation
 
@@ -44,7 +44,7 @@ To install the extension:
 
 ### Obtaining and setting up your Bing Maps key
 
-You'll need a Bing Maps key to use this Chrome extension. Follow the instructions in [Getting a Bing Maps Key](https://docs.microsoft.com/en-us/bingmaps/getting-started/bing-maps-dev-center-help/getting-a-bing-maps-key).
+You'll need a Bing Maps key to use this Firefox extension. Follow the instructions in [Getting a Bing Maps Key](https://docs.microsoft.com/en-us/bingmaps/getting-started/bing-maps-dev-center-help/getting-a-bing-maps-key).
 
 To add the Bing Maps key to the extension:
 
@@ -55,7 +55,7 @@ To add the Bing Maps key to the extension:
 * Add the Bing Maps key to the input box.
 * Click on "Save".
 
-![Options popup](https://mortonfox.github.io/munz-addr-ext/options_popup.png)
+![Options popup](https://raw.githubusercontent.com/mortonfox/munz-addr-ext-firefox/main/docs/options_firefox.png)
 
 ## Usage
 
