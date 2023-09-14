@@ -1,22 +1,55 @@
 // jshint strict: true, esversion: 8
 
-function init() {
+async function run() {
   'use strict';
 
-  const loctext = document.getElementById('locationtext');
-  if (loctext === null) return;
+  // Check if we are on a munzee page.
+  let loc = window.location.href;
+  // console.log(loc);
+  if (!/munzee.com\/m\/\w+\/\d+/.test(loc)) return;
 
-  const latstr = loctext.getAttribute('data-latitude');
-  const lonstr = loctext.getAttribute('data-longitude');
+  let mappage = loc.replace(/(munzee.com\/m\/\w+\/\d+).*$/, '$1/map/');
+  // console.log(mappage);
 
-  const lat = parseFloat(latstr);
-  const lon = parseFloat(lonstr);
+  let iframe = document.createElement("iframe");
+  iframe.style.display = 'none';
+  iframe.src = mappage;
+  document.body.appendChild(iframe);
+
+  async function waitForElem(getter) {
+    while (getter() == null) {
+      await new Promise(resolve =>  requestAnimationFrame(resolve));
+    }
+    return getter();
+  }
+
+  let elem = await waitForElem(() => iframe.contentWindow.document.getElementById('munzee-holder'));
+  let coords = [];
+  for (let node of elem.childNodes) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      let str = node.textContent.trim();
+      let m = str.match(/^(-?\d+\.\d+)$/);
+      if (m) {
+        coords.push(parseFloat(m[1]));
+      }
+    }
+  }
+
+  iframe.remove();
+
+  // console.log(coords);
+
+  if (coords.length < 2) return;
+
+  let [lat, lon] = coords;
+
+  let fragment = new DocumentFragment();
 
   function addElem(elem) {
     const el = document.createElement('div');
     el.style.textAlign = 'center';
     el.appendChild(elem);
-    loctext.parentNode.insertBefore(el, loctext);
+    fragment.appendChild(el);
   }
 
   function addText(str) {
@@ -85,42 +118,58 @@ function init() {
     });
   }
 
-  (async () => {
+  try {
+    const key = await getKey();
+    const url = `https://dev.virtualearth.net/REST/v1/Locations/${lat},${lon}?key=${key}`;
+
     try {
-      const key = await getKey();
-      const url = `https://dev.virtualearth.net/REST/v1/Locations/${latstr},${lonstr}?key=${key}`;
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`Status = ${resp.status} ${resp.statusText}`);
 
-      console.log(url);
+      const jsonobj = await resp.json();
 
-      try {
-        const resp = await fetch(url);
-        if (!resp.ok) throw new Error(`Status = ${resp.status} ${resp.statusText}`);
+      const addr = jsonobj.resourceSets[0].resources[0].name;
+      if (addr === undefined) return;
 
-        const jsonobj = await resp.json();
+      addText(addr);
 
-        const addr = jsonobj.resourceSets[0].resources[0].name;
-        if (addr === undefined) return;
-
-        addText(addr);
-
-        const span = document.createElement('span');
-        span.appendChild(copyButton(addr));
-        span.appendChild(document.createElement('br'));
-        const status = document.createElement('span');
-        status.id = status.name = 'copy_status';
-        span.appendChild(status);
-        addElem(span);
-      }
-      catch (err) {
-        addText(`Bing Maps API fetch error: ${err.message}`);
-      }
+      const span = document.createElement('span');
+      span.appendChild(copyButton(addr));
+      span.appendChild(document.createElement('br'));
+      const status = document.createElement('span');
+      status.id = status.name = 'copy_status';
+      span.appendChild(status);
+      addElem(span);
     }
     catch (err) {
-      addText(`Failed to get Bing Maps API key from browser local storage: ${err.message}`);
+      addText(`Bing Maps API fetch error: ${err.message}`);
     }
-  })();
+  }
+  catch (err) {
+    addText(`Failed to get Bing Maps API key from browser local storage: ${err.message}`);
+  }
+
+  // Add the text and button only if not already there
+  let locimage = await waitForElem(() => document.getElementById('locationimage'));
+  if (!document.getElementById('copy_addr')) locimage.appendChild(fragment);
 }
 
-init();
+// Run the address inserter the first time and also whenever the URL changes.
+// Some links in the new Munzee web interface do not reload the page.
+const observeUrlChange = () => {
+  let oldHref = null;
+  const body = document.querySelector('body');
+  const observer = new MutationObserver(mutations => {
+    if (oldHref !== document.location.href) {
+      oldHref = document.location.href;
+      run();
+    }
+  });
+  observer.observe(body, { childList: true, subtree: true });
+};
+
+// window.onload = observeUrlChange;
+observeUrlChange();
 
 // -- The End --
+
