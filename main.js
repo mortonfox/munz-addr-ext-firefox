@@ -106,21 +106,21 @@ async function run() {
     return btn;
   }
 
-  // Get Bing Maps API key from local storage.
+  // Get Geocodify API key from local storage.
   function getKey() {
     return new Promise((resolve, reject) => {
-      chrome.storage.local.get('bingMapsKey', result => {
+      chrome.storage.local.get('geocodifyKey', result => {
         if (chrome.runtime.lastError) {
           return reject(chrome.runtime.lastError);
         }
-        resolve(result.bingMapsKey);
+        resolve(result.geocodifyKey);
       });
     });
   }
 
   try {
     const key = await getKey();
-    const url = `https://dev.virtualearth.net/REST/v1/Locations/${lat},${lon}?key=${key}`;
+    const url = `https://api.geocodify.com/v2/reverse?api_key=${key}&lat=${lat}&lng=${lon}`;
 
     try {
       const resp = await fetch(url);
@@ -128,7 +128,7 @@ async function run() {
 
       const jsonobj = await resp.json();
 
-      const addr = jsonobj.resourceSets[0].resources[0].name;
+      const addr = jsonobj?.response?.features?.[0]?.properties?.label;
       if (addr === undefined) return;
 
       addText(addr);
@@ -142,11 +142,11 @@ async function run() {
       addElem(span);
     }
     catch (err) {
-      addText(`Bing Maps API fetch error: ${err.message}`);
+      addText(`Geocodify API fetch error: ${err.message}`);
     }
   }
   catch (err) {
-    addText(`Failed to get Bing Maps API key from browser local storage: ${err.message}`);
+    addText(`Failed to get Geocodify API key from browser local storage: ${err.message}`);
   }
 
   // Add the text and button only if not already there
@@ -172,4 +172,3 @@ const observeUrlChange = () => {
 observeUrlChange();
 
 // -- The End --
-

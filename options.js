@@ -5,20 +5,20 @@ function flash_result(color, message) {
   const status = document.getElementById('status');
   status.style.color = color;
   status.textContent = message;
-  setTimeout(() => { status.textContent = ''; }, 1000);
+  setTimeout(() => { status.textContent = ''; }, 2000);
 }
 
-// Saves Bing Maps key to browser local storage.
+// Saves Geocodify key to browser local storage.
 async function save_options() {
   'use strict';
-  const bing_maps_key = document.getElementById('bing_maps_key').value;
+  const geocodify_key = document.getElementById('geocodify_key').value;
   try {
     // Test the key.
-    const resp = await fetch(`https://dev.virtualearth.net/REST/v1/Locations/0,0?key=${bing_maps_key}`);
+    const resp = await fetch(`https://api.geocodify.com/v2/reverse?api_key=${geocodify_key}&lat=1&lng=1`);
     if (!resp.ok) throw new Error(`Status = ${resp.status} ${resp.statusText}`);
 
     try {
-      await setKey(bing_maps_key);
+      await setKey(geocodify_key);
       flash_result('green', 'Options saved.');
     }
     catch (err) {
@@ -26,40 +26,40 @@ async function save_options() {
     }
   }
   catch (err) {
-    flash_result('red', `Invalid key or other Bing Maps error. ${err.message}`);
+    flash_result('red', `Invalid key or other Geocodify error. ${err.message}`);
   }
 }
 
-// Restores Bing Maps key from browser local storage.
+// Restores Geocodify key from browser local storage.
 async function restore_options() {
   'use strict';
   try {
     let key = await getKey();
-    document.getElementById('bing_maps_key').value = key;
+    document.getElementById('geocodify_key').value = key;
   }
   catch (err) {
-    flash_result('red', `Error retrieving Bing Maps API key from browser local storage. ${err.message}`);
+    flash_result('red', `Error retrieving Geocodify API key from browser local storage. ${err.message}`);
   }
 }
 
-// Get Bing Maps API key from browser local storage.
+// Get Geocodify API key from browser local storage.
 function getKey() {
   'use strict';
   return new Promise((resolve, reject) => {
-    chrome.storage.local.get({bingMapsKey: ''}, result => {
+    chrome.storage.local.get({geocodifyKey: ''}, result => {
       if (chrome.runtime.lastError) {
         return reject(chrome.runtime.lastError);
       }
-      resolve(result.bingMapsKey);
+      resolve(result.geocodifyKey);
     });
   });
 }
 
-// Write Bing Maps API key to browser local storage.
+// Write Geocodify API key to browser local storage.
 function setKey(val) {
   'use strict';
   return new Promise((resolve, reject) => {
-    chrome.storage.local.set({bingMapsKey: val}, result => {
+    chrome.storage.local.set({geocodifyKey: val}, result => {
       if (chrome.runtime.lastError) {
         return reject(chrome.runtime.lastError);
       }
