@@ -2,12 +2,30 @@
 <html lang="en">
   <head>
     <title>munz_addr options</title>
+    <style>
+      input[type="text"] {
+        border: solid #007f9f;
+        font-weight: 700;
+      }
+      input[type="submit"] {
+        background-color: #fff;
+        color: #E82A24;
+        font-weight: 700;
+        border: solid #E82A24;
+        padding: 6px 10px;
+        cursor: pointer;
+      }
+      input[type="submit"]:hover {
+        background-color: #E82A24;
+        color: #fff;
+      }
+    </style>
   </head>
   <body>
     <form id="munz_addr_options">
       <label>
         Geocodify Key:<br/>
-        <input type="text" id="geocodify_key" name="geocodify_key" size="80"/><br/><br/>
+        <input type="text" id="geocodify_key" name="geocodify_key" placeholder="Geocodify API key" size="80"/><br/><br/>
       </label>
       <input type="submit" value="Save"/>
       <div id="status"></div>
